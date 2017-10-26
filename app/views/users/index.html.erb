@@ -1,0 +1,137 @@
+<h1 align="center">User Listing</h1>
+
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-hover">
+      <thead>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Change Role</th>
+        <th>Edit User</th>
+        <th>Delete User</th>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+        <tr>
+        <td class="fname-<%= user.id %>"><%= user.first_name%></td>
+        <td class="lname-<%= user.id %>"><%= user.last_name  %></td>
+        <td class="user-email-<%= user.id %>"><%= user.email%></td>
+        <td id="usr-role_<%= user.id %>"><%= user.role %></td>
+        <td>
+          <select class="role-cls" id="<%= user.id %>">
+          <option value="select">Select</option>
+          <option value="admin">Admin</option>
+          <option value="regular">Regular</option>
+          <option value="guest">Guest</option>
+        </select>
+        </td>
+        <td><button type="button" id = "<%= user.id %>" class="btn btn-info user-edit">Edit</button></td>
+         <td><button type="button" id = "<%= user.id %>" class="btn btn-danger del">Delete</button></td>
+         <td></td>
+        <tr>
+        <% end %>
+      </tbody>
+</table>
+  </div>
+</div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Edit User</h4>
+        </div>
+        <div class="modal-body">
+          <%= form_for @user, remote: true do |form| %>
+            <% if @user.errors.any? %>
+              <div id="error_explanation">
+                <h2><%= pluralize(@user.errors.count, "error") %> prohibited this profile from being saved:</h2>
+
+                <ul>
+                <% @user.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+                </ul>
+              </div>
+            <% end %>
+
+            <div class="form-group">
+              <input type="hidden" name="idd" id="idd">
+              <%= form.label :first_name %>
+              <%= form.text_field :first_name, id: :first_name, class: "form-control" %>
+            </div>
+
+            <div class="form-group">
+              <%= form.label :first_name %>
+              <%= form.text_field :last_name, id: :last_name, class: "form-control" %>
+            </div>
+
+            <div class="form-group">
+              <%= form.label :email %>
+              <%= form.email_field :email, id: :email, class: "form-control" %>
+            </div>
+
+            <!-- <div class="actions">
+              <%= form.submit class: "btn btn-success" %>
+            </div> -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="submit" id="user-submit" class="btn btn-primary">Save changes</button>
+            </div>
+          <% end %>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+
+  $('.user-edit').click(function(){
+    var id = $(this).attr('id');
+    var btn = $(this);
+
+    $.ajax({
+      url: '/edit_user/' + id,
+      type: 'GET',
+      dataType: 'json',
+      success: function(data){
+        $('#idd').val(data.id);
+        $('#first_name').val(data.first_name);
+        $('#last_name').val(data.last_name);
+        $('#email').val(data.email);
+        $('#userModal').modal('show');
+      }
+
+    });
+
+  });
+
+  $("form").submit(function() {
+    var valuesToSubmit = $('form').serialize();
+
+    $.ajax({
+      url: '/update_user/',
+      type: 'POST',
+      dataType: 'json',
+      data: valuesToSubmit,
+      success: function(data){
+        $('.fname-' + data.id).replaceWith("<td class='fname-" + data.id + "'>" + data.first_name + "</td>");
+        $('.lname-' + data.id).replaceWith("<td class='lname-" + data.id + "'>" + data.last_name + "</td>");
+        $('.user-email-' + data.id).replaceWith("<td class='user-email-" + data.id + "'>" + data.email + "</td>");
+        $('#userModal').modal('hide');
+
+      }
+
+    });
+
+
+
+
+  });
+
+  </script>
